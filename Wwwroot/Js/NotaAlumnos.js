@@ -22,14 +22,14 @@ function obtenerNotaAlumnos() {
         <td>${alumno.dNI ?? alumno.dni ?? ""}</td>
         <td>${registro.nota}</td>
                  <td class="text-center">
-          <button class="btn me-2 border-0 bg-transparent text-center"
+                    <button class="btn btn-sm btn-warning me-2"
             onclick="MostrarModalEditar(${id}, ${alumnoId}, ${asignaturaId})">
-            <i class="bi bi-pencil text-primary fs-5"></i>
+                        Editar
           </button>
 
-          <button class="btn border-0 bg-transparent"
+                    <button class="btn btn-sm btn-danger"
                         onclick="EliminarAlumno(${id})">
-            <i class="bi bi-trash text-danger fs-5"></i>
+                        Eliminar
           </button>
                 </td>
             </tr>`);

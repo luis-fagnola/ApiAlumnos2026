@@ -43,6 +43,13 @@ public class AlumnosController : ControllerBase
             return BadRequest();
         }
 
+        alumno.DNI = alumno.DNI.Trim();
+
+        if (await _context.Alumnos.AnyAsync(a => a.DNI == alumno.DNI && a.AlumnoID != id))
+        {
+            return Conflict(new { mensaje = "El DNI ya existe" });
+        }
+
         _context.Entry(alumno).State = EntityState.Modified;
 
         try
@@ -65,6 +72,23 @@ public class AlumnosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Alumno>> PostAlumno(Alumno alumno)
     {
+        if (alumno == null)
+        {
+            return BadRequest("alumno vacio");
+        }
+
+        if (string.IsNullOrWhiteSpace(alumno.Nombre))
+        {
+            return BadRequest("El nombre es obligatorio");
+        }
+
+        alumno.DNI = alumno.DNI.Trim();
+
+        if (await _context.Alumnos.AnyAsync(a => a.DNI == alumno.DNI))
+        {
+            return Conflict(new { mensaje = "El DNI ya existe" });
+        }
+
         _context.Alumnos.Add(alumno);
         await _context.SaveChangesAsync();
 
