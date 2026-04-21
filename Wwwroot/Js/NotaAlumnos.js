@@ -1,3 +1,4 @@
+// Obtener desde la API la lista de notas con sus datos de alumno.
 function obtenerNotaAlumnos() {
     fetch("/api/NotaAlumnoes")
     .then ((response) => response.json())
@@ -5,6 +6,7 @@ function obtenerNotaAlumnos() {
     .catch ((error) => console.log('Error al obtener los alumnos:', error));
 }
 
+// Muestra la tabla principal de NotaAlumnos en pantalla.
    function MostrarNotaAlumnos(data) {
     $("#tablaAlumnos").empty();
 
@@ -36,6 +38,7 @@ function obtenerNotaAlumnos() {
     });
 }
 
+// Valida el formulario 
 function ValidarFormulario() {
   let inputNombre = document.getElementById("Nombre");
   let errorNombre = document.getElementById("errorNombreAlumno");
@@ -56,7 +59,7 @@ function ValidarFormulario() {
   errorNota.textContent = "";
   inputNota.classList.remove("is-invalid", "is-valid");
 
-  //Limpiar errores previos
+    // Limpia errores.
   errorNombre.textContent = "";
   inputNombre.classList.remove("is-invalid", "is-valid")
 
@@ -68,7 +71,7 @@ function ValidarFormulario() {
 
   let esValido = true;
 
-  //Validar nombre obligatorio
+    // Valida que el nombre no este vacio.
   if(!nombre){
     inputNombre.classList.add("is-invalid");
     errorNombre.textContent = "Campo obligatorio"
@@ -78,7 +81,7 @@ function ValidarFormulario() {
     errorNombre.textContent = "";
   }
 
-    //Validar nota obligatorio
+    // Valida que la nota exista y este entre 1 y 10.
     const notaNumero = Number(nota);
 
     if(!nota) {
@@ -94,7 +97,7 @@ function ValidarFormulario() {
         errorNota.textContent = "";
     }
 
-  //Validar apellido obligatorio
+    // Valida que el apellido no este vacio.
   if(!apellido){
     inputApellido.classList.add("is-invalid");
     errorApellido.textContent = "Campo obligatorio"
@@ -104,7 +107,7 @@ function ValidarFormulario() {
     errorApellido.textContent = "";
   }
 
-  //Validar dni obligatorio
+    // Valida el DNI.
   if(!dni) {
     inputDni.classList.add("is-invalid");
     errorDni.textContent = "Campo obligatorio"
@@ -125,6 +128,7 @@ function ValidarFormulario() {
   return esValido;
 }
 
+// Valida el formulario de edicion antes de enviar cambios.
 function ValidarFormularioEditar() {
     let nombre = document.getElementById("editarNombre").value.trim();
     let apellido = document.getElementById("editarApellido").value.trim();
@@ -152,6 +156,7 @@ function ValidarFormularioEditar() {
 }
 
 
+// se crea o edita un alumno segun exista o no un ID cargado.
 function BuscarAlumnoId () {
     if (!ValidarFormulario()) {
         return;
@@ -164,6 +169,7 @@ function BuscarAlumnoId () {
     }
 }
 
+// Crea primero el alumno y luego su nota en la asignatura.
     async function CrearAlumno() {
         const notaValor = Number(document.getElementById("Nota").value);
 
@@ -182,6 +188,7 @@ function BuscarAlumnoId () {
         };
 
         try {
+            //  Alta de alumno.
             const alumnoResponse = await fetch("/api/Alumnos", {
                 method: "POST",
                 headers: {
@@ -198,6 +205,7 @@ function BuscarAlumnoId () {
             const alumnoCreado = await alumnoResponse.json();
             const alumnoId = alumnoCreado.alumnoID ?? alumnoCreado.alumnoId;
 
+            //  Busca asignaturas para asociar la nota.
             const asignaturasResponse = await fetch("/api/Asignaturas");
             if (!asignaturasResponse.ok) {
                 const msg = await asignaturasResponse.text();
@@ -211,6 +219,7 @@ function BuscarAlumnoId () {
 
             const asignaturaId = asignaturas[0].asignaturaID ?? asignaturas[0].asignaturaId;
 
+            // Alta de nota vinculada al alumno y asignatura.
             const notaResponse = await fetch("/api/NotaAlumnoes", {
                 method: "POST",
                 headers: {
@@ -228,6 +237,7 @@ function BuscarAlumnoId () {
                 throw new Error(msg || "No se pudo crear la nota");
             }
 
+            // Limpia formulario, cierra modal y refresca tabla.
             document.getElementById("Nombre").value = "";
             document.getElementById("Apellido").value = "";
             document.getElementById("Dni").value = "";
@@ -243,6 +253,7 @@ function BuscarAlumnoId () {
     }
 
 
+// Carga datos del registro y abre el modal de edicion.
 function MostrarModalEditar(id, alumnoId, asignaturaId){
     fetch(`/api/NotaAlumnoes/${id}`, {
     method: "GET",
@@ -270,6 +281,7 @@ function MostrarModalEditar(id, alumnoId, asignaturaId){
     .catch((error) => console.log("Error al obtener el alumno:", error));
 }
 
+// Actualiza alumno y nota en la API usando los IDs guardados en el modal.
 async function EditarAlumno() {
     if (!ValidarFormularioEditar()) {
         return;
@@ -298,6 +310,7 @@ async function EditarAlumno() {
     };
 
     try {
+        // Actualiza datos del alumno.
         const alumnoResponse = await fetch(`/api/Alumnos/${alumnoId}`, {
             method: "PUT",
             headers: {
@@ -311,6 +324,7 @@ async function EditarAlumno() {
             throw new Error(msg || "No se pudo editar el alumno");
         }
 
+        // Actualiza la nota.
         const notaResponse = await fetch(`/api/NotaAlumnoes/${id}`, {
             method: "PUT",
             headers: {
@@ -324,6 +338,7 @@ async function EditarAlumno() {
             throw new Error(msg || "No se pudo editar la nota");
         }
 
+        //Limpia campos, cierra modal y refresca la grilla.
         document.getElementById("editarId").value = "";
         document.getElementById("editarNombre").value = "";
         document.getElementById("editarApellido").value = "";
@@ -340,6 +355,7 @@ async function EditarAlumno() {
 }
 
 
+//confirmacion antes de eliminar.
 function EliminarAlumno (id) {
     var Eliminar = confirm("¿Está seguro de eliminar el alumno?");
     if (Eliminar==true) {
@@ -348,6 +364,7 @@ function EliminarAlumno (id) {
 }
 
 
+// Elimina la nota del alumno y vuelve a cargar la tabla.
 function EliminarSi(id) {
     fetch(`/api/NotaAlumnoes/${id}`, {
         method: "DELETE",
@@ -358,4 +375,6 @@ function EliminarSi(id) {
     })
     .catch((error) => console.log("Error al eliminar el alumno:", error));
 }
+
+
 obtenerNotaAlumnos(); 
