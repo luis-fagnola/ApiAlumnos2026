@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ApiAlumnos2026.ClasesVistas;
 using ApiAlumnos2026.Data;
 using ApiAlumnos2026.Models;
 
@@ -14,6 +15,24 @@ public class AlumnosController : ControllerBase
     public AlumnosController(AppDbContext context)
     {
         _context = context;
+    }
+
+    [HttpGet("vista")]
+    public async Task<ActionResult<IEnumerable<VistaAlumno>>> GetAlumnosVista()
+    {
+        return await _context.Alumnos
+            .Include(a => a.NotasAlumnos)
+            .Select(a => new VistaAlumno
+            {
+                AlumnoID = a.AlumnoID,
+                Nombre = a.Nombre,
+                Apellido = a.Apellido,
+                DNI = a.DNI,
+                SexoString = a.Sexo.ToString(),
+                Domicilio = a.Domicilio,
+                Nota = a.NotasAlumnos.Select(n => n.Nota).FirstOrDefault()
+            })
+            .ToListAsync();
     }
 
     [HttpGet]
@@ -45,7 +64,7 @@ public class AlumnosController : ControllerBase
 
         alumno.DNI = alumno.DNI.Trim();
 
-        if (await _context.Alumnos.AnyAsync(a => a.DNI == alumno.DNI && a.AlumnoID != id))
+        if (await _context.Alumnos.AnyAsync(a => a.DNI.Trim() == alumno.DNI && a.AlumnoID != id))
         {
             return Conflict(new { mensaje = "El DNI ya existe" });
         }

@@ -1,6 +1,6 @@
 // Obtener desde la API la lista de notas con sus datos de alumno.
 function obtenerNotaAlumnos() {
-    fetch("/api/NotaAlumnoes")
+    fetch("/api/NotaAlumnoes/vista")
     .then ((response) => response.json())
     .then ((data) => MostrarNotaAlumnos(data))
     .catch ((error) => console.log('Error al obtener los alumnos:', error));
@@ -12,20 +12,17 @@ function obtenerNotaAlumnos() {
 
     $.each(data, function (index, registro) {
     const id = registro.notaAlumnoID ?? registro.notaAlumnoId;
-    const alumno = registro.alumno || {};
-    const alumnoId = registro.alumnoID ?? registro.alumnoId ?? alumno.alumnoID ?? alumno.alumnoId;
-    const asignaturaId = registro.asignaturaID ?? registro.asignaturaId;
 
         $("#tablaAlumnos").append(
             `<tr>
-        <td>${id}</td>
-        <td>${alumno.nombre ?? ""}</td>
-        <td>${alumno.apellido ?? ""}</td>
-        <td>${alumno.dNI ?? alumno.dni ?? ""}</td>
+        <td>${registro.nombre ?? ""}</td>
+        <td>${registro.apellido ?? ""}</td>
+        <td>${registro.dNI ?? registro.dni ?? ""}</td>
         <td>${registro.nota}</td>
+        <td>${registro.fecha ? new Date(registro.fecha).toLocaleDateString('es-AR') : ""}</td>
                  <td class="text-center">
                     <button class="btn btn-sm btn-warning me-2"
-            onclick="MostrarModalEditar(${id}, ${alumnoId}, ${asignaturaId})">
+            onclick="MostrarModalEditar(${id})">
                         Editar
           </button>
 
@@ -265,7 +262,7 @@ function MostrarModalEditar(id, alumnoId, asignaturaId){
     .then((data) => {
         const alumno = data.alumno || {};
         const hiddenId = document.getElementById("editarId");
-
+        
         hiddenId.value = data.notaAlumnoID ?? data.notaAlumnoId ?? id;
         hiddenId.dataset.alumnoId = alumnoId ?? data.alumnoID ?? data.alumnoId ?? alumno.alumnoID ?? alumno.alumnoId;
         hiddenId.dataset.asignaturaId = asignaturaId ?? data.asignaturaID ?? data.asignaturaId;
@@ -274,6 +271,7 @@ function MostrarModalEditar(id, alumnoId, asignaturaId){
         document.getElementById("editarApellido").value = alumno.apellido ?? "";
         document.getElementById("editarDni").value = alumno.dNI ?? alumno.dni ?? "";
         document.getElementById("editarNota").value = data.nota;
+        document.getElementById("editarFecha").value = data.fecha ? new Date(data.fecha).toLocaleDateString() : "";
 
         let modal = new bootstrap.Modal(document.getElementById("editarAlumnoModal"));
         modal.show();
@@ -323,7 +321,7 @@ async function EditarAlumno() {
             const msg = await alumnoResponse.text();
             throw new Error(msg || "No se pudo editar el alumno");
         }
-
+console.log(notaAlumno);
         // Actualiza la nota.
         const notaResponse = await fetch(`/api/NotaAlumnoes/${id}`, {
             method: "PUT",
@@ -344,7 +342,7 @@ async function EditarAlumno() {
         document.getElementById("editarApellido").value = "";
         document.getElementById("editarDni").value = "";
         document.getElementById("editarNota").value = "";
-
+        document.getElementById("editarFecha").value = "";
         let modal = bootstrap.Modal.getInstance(document.getElementById("editarAlumnoModal"));
         modal.hide();
         obtenerNotaAlumnos();

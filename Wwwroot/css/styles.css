@@ -1,1 +1,39 @@
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
 
+.table {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: rgba(102, 126, 234, 0.85);
+    color: white;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: rgba(118, 75, 162, 0.07);
+}
+
+.table-hover > tbody > tr:hover > * {
+    background-color: rgba(102, 126, 234, 0.15);
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+h1 {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+hr {
+    border-color: rgba(255,255,255,0.4);
+}

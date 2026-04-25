@@ -23,4 +23,6 @@ public class NotaAlumno
 
     [ForeignKey(nameof(AsignaturaID))]
     public Asignatura? Asignatura { get; set; }
+
+    public DateTime Fecha { get; set; }
 }

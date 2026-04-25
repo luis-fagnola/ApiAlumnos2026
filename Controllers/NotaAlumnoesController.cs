@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ApiAlumnos2026.ClasesVistas;
 using ApiAlumnos2026.Data;
 using ApiAlumnos2026.Models;
 
@@ -19,6 +20,24 @@ namespace ApiAlumnos2026.Controllers
         public NotaAlumnoesController(AppDbContext context)
         {
             _context = context;
+        }
+
+        // GET: api/NotaAlumnoes/vista
+        [HttpGet("vista")]
+        public async Task<ActionResult<IEnumerable<VistaNotaAlumno>>> GetNotasVista()
+        {
+            return await _context.NotasAlumnos
+                .Include(n => n.Alumno)
+                .Select(n => new VistaNotaAlumno
+                {
+                    NotaAlumnoID = n.NotaAlumnoID,
+                    Nombre = n.Alumno != null ? n.Alumno.Nombre : "",
+                    Apellido = n.Alumno != null ? n.Alumno.Apellido : "",
+                    Nota = n.Nota,
+                    DNI = n.Alumno != null ? n.Alumno.DNI : "",
+                    Fecha = n.Fecha
+                })
+                .ToListAsync();
         }
 
         // GET: api/NotaAlumnoes
@@ -51,39 +70,36 @@ namespace ApiAlumnos2026.Controllers
         // PUT: api/NotaAlumnoes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
-        {
-            if (id != notaAlumno.NotaAlumnoID)
-            {
-                return BadRequest();
-            }
+public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
+{
+    if (id != notaAlumno.NotaAlumnoID)
+    {
+        return BadRequest();
+    }
 
-            _context.Entry(notaAlumno).State = EntityState.Modified;
+    var nota = await _context.NotasAlumnos.FindAsync(id);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!NotaAlumnoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+    if (nota == null)
+    {
+        return NotFound();
+    }
 
-            return NoContent();
-        }
+    // ✔️ Solo lo que corresponde a NotaAlumno
+    nota.Nota = notaAlumno.Nota;
+    nota.Fecha = notaAlumno.Fecha;
+
+    await _context.SaveChangesAsync();
+
+    return NoContent();
+}
 
         // POST: api/NotaAlumnoes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<NotaAlumno>> PostNotaAlumno(NotaAlumno notaAlumno)
         {
+            // se guarda la fecha
+             notaAlumno.Fecha = DateTime.Now; 
             _context.NotasAlumnos.Add(notaAlumno);
             await _context.SaveChangesAsync();
 

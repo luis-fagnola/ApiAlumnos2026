@@ -5,7 +5,7 @@ function obtenerDocentes() {
         .catch((error) => console.log("Error al obtener los docentes:", error));
 }
 
-function sexoATexto(sexo) {
+function sexoElegido(sexo) {
     const valor = Number(sexo);
     if (valor === 1) return "Masculino";
     if (valor === 2) return "Femenino";
@@ -25,7 +25,7 @@ function mostrarDocentes(data) {
                 <td>${registro.nombre ?? ""}</td>
                 <td>${registro.apellido ?? ""}</td>
                 <td>${registro.dni ?? registro.dNI ?? ""}</td>
-                <td>${sexoATexto(registro.sexo)}</td>
+                <td>${sexoElegido(registro.sexo)}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-warning me-2" onclick="mostrarModalEditar(${id})">Editar</button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarDocente(${id})">Eliminar</button>
