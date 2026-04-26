@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Notas Alumnos 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary shadow-sm" data-bs-theme="dark">
+        <div class="container-fluid">
+
+            <a class="navbar-brand" href="Index.html">  Notas Alumnos</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="Docente.html">Docentes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="Resultados.html">Resultados</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="Asignatura.html">Asignaturas</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="Alumnos.html">Alumnos</a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="container mt-4" >
+        <h1>Resultados del Grupo</h1>
+        <hr>
+
+        <div class="card">
+            <div class="card-body">
+                <p class="mb-2"><strong>Promedio general:</strong> <span id="promedioGeneral">-</span></p>
+                </div>
+                </div>
+
+                <div class="card" >
+                <div class="card-body">
+                <p class="mb-2"><strong>Alumno con nota más alta:</strong> <span id="alumnoMasAlta">-</span></p>
+                </div>
+                </div>
+
+                <div class="card">
+                <div class="card-body">
+                <p class="mb-2"><strong>Alumno con nota más baja:</strong> <span id="alumnoMasBaja">-</span></p>
+                </div>
+                </div>
+
+
+                <div class="card" >
+                <div class="card-body">
+                <p class="mb-2"><strong>Cantidad de aprobados:</strong> <span id="cantAprobados">-</span></p>
+                </div>
+                </div>
+
+
+                <div class="card">
+                <div class="card-body">
+                <p class="mb-2"><strong>Cantidad de desaprobados:</strong> <span id="cantDesaprobados">-</span></p>
+                </div>
+                </div>
+
+                <div class="card">
+                <div class="card-body">
+                <p class="mb-0"><strong>Estado del grupo:</strong> <span id="estadoGrupo">-</span></p>
+                </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="Js/Resultados.js"></script>
+
+</body>
+</html>
