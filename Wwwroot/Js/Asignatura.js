@@ -1,3 +1,5 @@
+// Pide todas las asignaturas  arma la tabla con los datos.
+
 function cargarAsignaturas() {
 	fetch("/api/Asignaturas")
 		.then((response) => response.json())
@@ -21,6 +23,8 @@ function cargarAsignaturas() {
 		.catch(() => alert("Error al cargar asignaturas"));
 }
 
+// crea una nueva asignatura.
+// Si el campo esta vacio muestra un alerta y no envia nada.
 function crearAsignatura() {
 	const descripcion = document.getElementById("Descripcion").value.trim();
 
@@ -41,6 +45,9 @@ function crearAsignatura() {
 		.catch(() => alert("Error al crear asignatura"));
 }
 
+// Edita la descripcion de una asignatura y si esta eliminada o no.
+
+// Luego envia los cambios.
 function editarAsignatura(id, descripcionActual, eliminadoActual) {
 	const nuevaDescripcion = prompt("Nueva descripcion:", descripcionActual);
 	if (nuevaDescripcion === null) {
@@ -64,6 +71,8 @@ function editarAsignatura(id, descripcionActual, eliminadoActual) {
 		.catch(() => alert("Error al editar asignatura"));
 }
 
+// Pide confirmacion al usuario antes de eliminar.
+// Si acepta envia hace DELETE y recarga la tabla.
 function eliminarAsignatura(id) {
 	if (!confirm("Desea eliminar esta asignatura?")) {
 		return;
@@ -74,4 +83,4 @@ function eliminarAsignatura(id) {
 		.catch(() => alert("Error al eliminar asignatura"));
 }
 
-cargarAsignaturas();
+

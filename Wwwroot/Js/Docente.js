@@ -1,9 +1,12 @@
+// Pide la lista de docentes , llama a mostrarDocentes .
 function obtenerDocentes() {
     fetch("/api/Docentes")
         .then((response) => response.json())
         .then((data) => mostrarDocentes(data))
         .catch((error) => console.log("Error al obtener los docentes:", error));
 }
+
+// Convierte el valor numerico del sexo.
 
 function sexoElegido(sexo) {
     const valor = Number(sexo);
@@ -13,6 +16,7 @@ function sexoElegido(sexo) {
     return "Sin definir";
 }
 
+// Arma la tabla de docentes con todos los datos
 function mostrarDocentes(data) {
     $("#tablaDocentes").empty();
 
@@ -35,6 +39,8 @@ function mostrarDocentes(data) {
     });
 }
 
+// Valida todos los campos del formulario 
+// Si baseId es vacio valida el formulario de alta, si es 'editar' valida el de edicion.
 function validarFormulario(baseId = "") {
     const nombreInput = document.getElementById(baseId + "Nombre");
     const apellidoInput = document.getElementById(baseId + "Apellido");
@@ -110,6 +116,7 @@ function validarFormulario(baseId = "") {
     return valido;
 }
 
+// Limpia todos los campos del formulario de alta de docente.
 function limpiarFormularioNuevoDocente() {
     document.getElementById("DocenteId").value = "";
     document.getElementById("Nombre").value = "";
@@ -118,6 +125,7 @@ function limpiarFormularioNuevoDocente() {
     document.getElementById("Sexo").value = "";
 }
 
+// Decide si crear o editar  si hay un ID cargado en el campo.
 function guardarDocente() {
     if (!validarFormulario("")) {
         return;
@@ -132,10 +140,13 @@ function guardarDocente() {
     editarDocente();
 }
 
+// guardarDocente para el onclick del boton del HTML.
 function GuardarDocente() {
     guardarDocente();
 }
 
+// crear un nuevo docente.
+// cierra el modal limpia el form y recarga la tabla.
 async function crearDocente() {
     const payload = {
         nombre: document.getElementById("Nombre").value.trim(),
@@ -166,6 +177,7 @@ async function crearDocente() {
     }
 }
 
+// Pide los datos del docente  por ID y los carga en el modal de edicion.
 function mostrarModalEditar(id) {
     fetch(`/api/Docentes/${id}`, {
         method: "GET",
@@ -185,10 +197,13 @@ function mostrarModalEditar(id) {
         .catch((error) => console.log("Error al obtener docente:", error));
 }
 
+// mostrarModalEditar.
 function mostrarModalEditarAlias(id) {
     mostrarModalEditar(id);
 }
 
+// actualizar el docente.
+// cierra el modal y recarga la tabla.
 async function editarDocente() {
     if (!validarFormulario("editar")) {
         return;
@@ -224,10 +239,12 @@ async function editarDocente() {
     }
 }
 
+// editarDocente para el onclick del boton del HTML.
 function EditarDocente() {
     editarDocente();
 }
 
+// Pide confirmacion antes de eliminar
 function eliminarDocente(id) {
     if (!confirm("¿Está seguro de eliminar el docente?")) {
         return;
@@ -246,4 +263,5 @@ function eliminarDocente(id) {
         });
 }
 
+// carga la lista de docentes 
 obtenerDocentes();

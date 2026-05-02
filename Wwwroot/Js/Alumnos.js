@@ -1,6 +1,7 @@
+// Cuando la pagina termina de cargar llama obtenerAlumnos.
 document.addEventListener("DOMContentLoaded", obtenerAlumnos);
 
-// Obtiene la lista de alumnos desde la vista de la API.
+//  lista de alumnos usando la vista.
 function obtenerAlumnos() {
     fetch("/api/Alumnos/vista")
         .then((response) => response.json())
@@ -8,7 +9,8 @@ function obtenerAlumnos() {
         .catch((error) => console.log("Error al obtener los alumnos:", error));
 }
 
-// muestra la tabla con los datos de VistaAlumno.
+// Muestra la tabla con los datos de VistaAlumno.
+// Vacia la tabla primero y agrega una fila por cada alumno .
 function MostrarAlumnos(data) {
     $("#tablaAlumnos").empty();
 
@@ -22,6 +24,7 @@ function MostrarAlumnos(data) {
                 <td>${registro.apellido ?? ""}</td>
                 <td>${registro.dNI ?? registro.dni ?? ""}</td>
                 <td>${registro.domicilio ?? ""}</td>
+                <td>${registro.sexoString ?? ""}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-warning me-2" onclick="MostrarModalEditar(${id})">
                         Editar
@@ -35,7 +38,8 @@ function MostrarAlumnos(data) {
     });
 }
 
-// Valida el formulario de alta.
+// Valida el formulario.
+//  todos los campos esten completos el DNI sea numerico.
 function ValidarFormulario() {
     let inputNombre = document.getElementById("Nombre");
     let errorNombre = document.getElementById("errorNombreAlumno");
@@ -59,12 +63,16 @@ function ValidarFormulario() {
 
     errorNombre.textContent = "";
     inputNombre.classList.remove("is-invalid", "is-valid");
+
     errorApellido.textContent = "";
     inputApellido.classList.remove("is-invalid", "is-valid");
+
     errorDni.textContent = "";
     inputDni.classList.remove("is-invalid", "is-valid");
+
     errorDomicilio.textContent = "";
     inputDomicilio.classList.remove("is-invalid", "is-valid");
+    
     errorSexo.textContent = "";
     inputSexo.classList.remove("is-invalid", "is-valid");
 
@@ -111,7 +119,7 @@ function ValidarFormulario() {
     return esValido;
 }
 
-// Determina si se crea o edita según el ID cargado.
+// crea o edita  si hay o no un ID cargadoo.
 function BuscarAlumnoId() {
     if (!ValidarFormulario()) return;
 
@@ -123,7 +131,8 @@ function BuscarAlumnoId() {
     }
 }
 
-// Crea un alumno y luego su nota.
+// Envia el formulario  para crear un nuevo alumno.
+//  limpia el formulario, cierra el modal y recarga la tabla.
 async function CrearAlumno() {
     let alumno = {
         nombre: document.getElementById("Nombre").value,
@@ -159,7 +168,7 @@ async function CrearAlumno() {
     }
 }
 
-// Carga datos del alumno en el modal de edición.
+// Pide los datos por ID y los carga en el modal de edicion.
 function MostrarModalEditar(id) {
     fetch(`/api/Alumnos/${id}`)
         .then((response) => response.json())
@@ -176,7 +185,8 @@ function MostrarModalEditar(id) {
         .catch((error) => console.log("Error al obtener el alumno:", error));
 }
 
-// Actualiza los datos del alumno.
+// Envia los datos editados del alumno.
+//cierra el modal y recarga la tabla.
 async function EditarAlumno() {
     let id = parseInt(document.getElementById("editarId").value);
     let nombre = document.getElementById("editarNombre").value.trim();

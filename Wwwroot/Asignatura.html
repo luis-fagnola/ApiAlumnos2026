@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    
     <nav class="navbar navbar-expand-lg bg-primary shadow-sm" data-bs-theme="dark">
         <div class="container-fluid">
 
@@ -34,6 +35,10 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="Alumnos.html">Alumnos</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="PromedioAlumnos.html">Promedio Alumnos</a>
+                    </li>
+
                 </ul>
             </div>
 
@@ -43,6 +48,7 @@
     <div class="container py-4">
         <h1 class="mb-4">Asignaturas</h1>
 
+    <!-- Formulario de alta  para crear una nueva asignatura -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row g-2 align-items-end">
@@ -57,6 +63,7 @@
             </div>
         </div>
 
+        <!-- Tabla de asignaturas Se llena desde Asignatura.js  -->
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover align-middle">
                 <thead>
@@ -71,6 +78,7 @@
             </table>
         </div>
     </div>
+    
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="Js/Asignatura.js"></script>

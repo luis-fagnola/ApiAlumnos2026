@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    
     <nav class="navbar navbar-expand-lg bg-primary shadow-sm" data-bs-theme="dark">
         <div class="container-fluid">
 
@@ -35,50 +36,60 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="Alumnos.html">Alumnos</a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="PromedioAlumnos.html">Promedio Alumnos</a>
+                    </li>
                 </ul>
             </div>
 
         </div>
     </nav>
 
+   
     <div class="container mt-4" >
         <h1>Resultados del Grupo</h1>
         <hr>
 
         <div class="card">
             <div class="card-body">
+
+                <!-- Muestra el promedio de notas de todo el grupo -->
                 <p class="mb-2"><strong>Promedio general:</strong> <span id="promedioGeneral">-</span></p>
                 </div>
                 </div>
-
                 <div class="card" >
                 <div class="card-body">
+
+                <!-- Muestra el nombre del alumno con la nota mas alta -->
                 <p class="mb-2"><strong>Alumno con nota más alta:</strong> <span id="alumnoMasAlta">-</span></p>
                 </div>
                 </div>
-
                 <div class="card">
                 <div class="card-body">
+
+                <!-- Muestra el nombre del alumno con la nota mas baja -->
                 <p class="mb-2"><strong>Alumno con nota más baja:</strong> <span id="alumnoMasBaja">-</span></p>
                 </div>
                 </div>
-
-
                 <div class="card" >
                 <div class="card-body">
+
+                <!-- Muestra cuantos alumnos aprobaron (nota >= 6) -->
                 <p class="mb-2"><strong>Cantidad de aprobados:</strong> <span id="cantAprobados">-</span></p>
                 </div>
                 </div>
-
-
                 <div class="card">
                 <div class="card-body">
+
+                <!-- Muestra cuantos alumnos desaprobaron (nota < 6) -->
                 <p class="mb-2"><strong>Cantidad de desaprobados:</strong> <span id="cantDesaprobados">-</span></p>
                 </div>
                 </div>
-
                 <div class="card">
                 <div class="card-body">
+
+                <!-- Muestra si el grupo aprobo o esta en riesgo segun el promedio general -->
                 <p class="mb-0"><strong>Estado del grupo:</strong> <span id="estadoGrupo">-</span></p>
                 </div>
                 </div>
@@ -88,6 +99,7 @@
         </div>
     </div>
 
+    
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="Js/Resultados.js"></script>

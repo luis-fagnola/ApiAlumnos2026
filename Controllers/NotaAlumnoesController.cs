@@ -11,36 +11,53 @@ using ApiAlumnos2026.Models;
 
 namespace ApiAlumnos2026.Controllers
 {
+    // Controlador para gestionar las notas de los alumnos.
+    // La ruta base es /api/NotaAlumnoes
     [Route("api/[controller]")]
     [ApiController]
     public class NotaAlumnoesController : ControllerBase
     {
         private readonly AppDbContext _context;
 
+        // Recibe el contexto de base de datos.
         public NotaAlumnoesController(AppDbContext context)
         {
             _context = context;
         }
 
         // GET: api/NotaAlumnoes/vista
+        // Trae todos los alumnos y su nota (si tiene). Usa GroupJoin para
+        // los que no tienen ninguna nota registrada.
         [HttpGet("vista")]
         public async Task<ActionResult<IEnumerable<VistaNotaAlumno>>> GetNotasVista()
         {
-            return await _context.NotasAlumnos
-                .Include(n => n.Alumno)
-                .Select(n => new VistaNotaAlumno
-                {
-                    NotaAlumnoID = n.NotaAlumnoID,
-                    Nombre = n.Alumno != null ? n.Alumno.Nombre : "",
-                    Apellido = n.Alumno != null ? n.Alumno.Apellido : "",
-                    Nota = n.Nota,
-                    DNI = n.Alumno != null ? n.Alumno.DNI : "",
-                    Fecha = n.Fecha
-                })
+            var resultado = await _context.Alumnos
+                .GroupJoin(
+                    _context.NotasAlumnos,
+                    a => a.AlumnoID,
+                    n => n.AlumnoID,
+                    (a, notas) => new { Alumno = a, Notas = notas }
+                )
+                .SelectMany(
+                    x => x.Notas.DefaultIfEmpty(),
+                    (x, nota) => new VistaNotaAlumno
+                    {
+                        NotaAlumnoID = nota != null ? nota.NotaAlumnoID : 0,
+                        AlumnoID = x.Alumno.AlumnoID,
+                        Nombre = x.Alumno.Nombre,
+                        Apellido = x.Alumno.Apellido,
+                        DNI = x.Alumno.DNI,
+                        Nota = nota != null ? (double?)nota.Nota : null,
+                        Fecha = nota != null ? (DateTime?)nota.Fecha : null
+                    }
+                )
                 .ToListAsync();
+
+            return Ok(resultado);
         }
 
         // GET: api/NotaAlumnoes
+        // Devuelve todas las notas con los datos del alumno y la asignatura relacionados.
         [HttpGet]
         public async Task<ActionResult<IEnumerable<NotaAlumno>>> GetNotas()
         {
@@ -51,6 +68,7 @@ namespace ApiAlumnos2026.Controllers
         }
 
         // GET: api/NotaAlumnoes/5
+        // Busca una nota especifica por ID incluyendo los datos del alumno y la asignatura.
         [HttpGet("{id}")]
         public async Task<ActionResult<NotaAlumno>> GetNotaAlumno(int id)
         {
@@ -68,7 +86,8 @@ namespace ApiAlumnos2026.Controllers
         }
 
         // PUT: api/NotaAlumnoes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // Edita una nota existente. Solo actualiza la nota, fecha y asignatura,
+        // no permite cambiar el alumno al que pertenece.
         [HttpPut("{id}")]
 public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
 {
@@ -84,9 +103,10 @@ public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
         return NotFound();
     }
 
-    // ✔️ Solo lo que corresponde a NotaAlumno
+    //  NotaAlumno
     nota.Nota = notaAlumno.Nota;
     nota.Fecha = notaAlumno.Fecha;
+    nota.AsignaturaID = notaAlumno.AsignaturaID;
 
     await _context.SaveChangesAsync();
 
@@ -94,7 +114,7 @@ public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
 }
 
         // POST: api/NotaAlumnoes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // Crea una nueva nota para un alumno. La fecha se asigna automaticamente.
         [HttpPost]
         public async Task<ActionResult<NotaAlumno>> PostNotaAlumno(NotaAlumno notaAlumno)
         {
@@ -106,7 +126,51 @@ public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
             return CreatedAtAction("GetNotaAlumno", new { id = notaAlumno.NotaAlumnoID }, notaAlumno);
         }
 
+        // POST: api/NotaAlumnoes/promedioalumnos
+        // Calcula el promedio de notas de cada alumno filtrado por asignatura yfechas.
+        // Recibe un objeto FiltroPromedio con fechaDesde, fechaHasta y asignaturaID.
+        
+        [HttpPost("promedioalumnos")]
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetPromedioAlumnos([FromBody] FiltroPromedio filtro)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filtro.FechaDesde) || string.IsNullOrEmpty(filtro.FechaHasta))
+                {
+                    return BadRequest(new { mensaje = "Las fechas son requeridas" });
+                }
+
+                var fechaDesde = DateTime.Parse(filtro.FechaDesde);
+                var fechaHasta = DateTime.Parse(filtro.FechaHasta).AddDays(1);
+
+                var promedios = await _context.NotasAlumnos
+                    .Include(n => n.Alumno)
+                    .Include(n => n.Asignatura)
+                    .Where(n => n.AsignaturaID == filtro.AsignaturaID &&
+                               n.Fecha >= fechaDesde && n.Fecha < fechaHasta &&
+                               n.Alumno != null)
+                    .GroupBy(n => new { n.Alumno!.Nombre, n.Alumno.Apellido, n.Alumno.DNI })
+                    .Select(g => new
+                    {
+                        nombre = g.Key.Nombre,
+                        apellido = g.Key.Apellido,
+                        dNI = g.Key.DNI,
+                        promedio = g.Average(n => n.Nota)
+                    })
+                    .OrderBy(p => p.apellido)
+                    .ThenBy(p => p.nombre)
+                    .ToListAsync();
+
+                return Ok(promedios);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = "Error al calcular promedios", error = ex.Message });
+            }
+        }
+
         // DELETE: api/NotaAlumnoes/5
+        // Elimina una nota por su ID. Devuelve not foun.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNotaAlumno(int id)
         {
@@ -122,6 +186,7 @@ public async Task<IActionResult> PutNotaAlumno(int id, NotaAlumno notaAlumno)
             return NoContent();
         }
 
+        // verifica si una nota existe en la base.
         private bool NotaAlumnoExists(int id)
         {
             return _context.NotasAlumnos.Any(e => e.NotaAlumnoID == id);

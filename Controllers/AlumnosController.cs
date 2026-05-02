@@ -6,17 +6,23 @@ using ApiAlumnos2026.Models;
 
 namespace ApiAlumnos2026.Controllers;
 
+// Este controlador maneja todo lo relacionado a alumnos.
+// La ruta base es /api/Alumnos
 [Route("api/[controller]")]
 [ApiController]
 public class AlumnosController : ControllerBase
 {
     private readonly AppDbContext _context;
 
+    // Recibe el contexto de base de datos.
     public AlumnosController(AppDbContext context)
     {
         _context = context;
     }
 
+    // GET /api/Alumnos/vista
+    // Trae todos los alumnos con su primera nota cargada.
+    // Devuelve una vista(VistaAlumno) en vez del modelo.
     [HttpGet("vista")]
     public async Task<ActionResult<IEnumerable<VistaAlumno>>> GetAlumnosVista()
     {
@@ -35,12 +41,16 @@ public class AlumnosController : ControllerBase
             .ToListAsync();
     }
 
+    // GET /api/Alumnos
+    // Devuelve la lista completa de todos los alumnos sin filtro.
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Alumno>>> GetAlumnos()
     {
         return await _context.Alumnos.ToListAsync();
     }
 
+    // GET /api/Alumnos/{id}
+    // Busca un alumno por su ID. Si no existe devuelve not found.
     [HttpGet("{id}")]
     public async Task<ActionResult<Alumno>> GetAlumno(int id)
     {
@@ -54,6 +64,10 @@ public class AlumnosController : ControllerBase
         return alumno;
     }
 
+    // PUT /api/Alumnos/{id}
+    // Edita los datos de un alumno existente.
+    // Verifica que el ID coincida, limpia espacios del DNI
+    // y controla que no haya otro alumno con el mismo DNI.
     [HttpPut("{id}")]
     public async Task<IActionResult> PutAlumno(int id, Alumno alumno)
     {
@@ -62,8 +76,10 @@ public class AlumnosController : ControllerBase
             return BadRequest();
         }
 
+        // Saca los espacios en blanco del DNI antes de guardar.
         alumno.DNI = alumno.DNI.Trim();
 
+        // Si ya hay otro alumno con ese DNI (que no sea el mismo), rechaza con conflicto.
         if (await _context.Alumnos.AnyAsync(a => a.DNI.Trim() == alumno.DNI && a.AlumnoID != id))
         {
             return Conflict(new { mensaje = "El DNI ya existe" });
@@ -77,6 +93,7 @@ public class AlumnosController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
+            // Si el alumno no existe al intentar guardar, devuelve not found.
             if (!AlumnoExists(id))
             {
                 return NotFound();
@@ -88,6 +105,9 @@ public class AlumnosController : ControllerBase
         return NoContent();
     }
 
+    // POST /api/Alumnos
+    // Crea un nuevo alumno. Valida que no venga vacío, que tenga nombre
+    // y que el DNI no esté ya registrado en la base de datos.
     [HttpPost]
     public async Task<ActionResult<Alumno>> PostAlumno(Alumno alumno)
     {
@@ -101,8 +121,10 @@ public class AlumnosController : ControllerBase
             return BadRequest("El nombre es obligatorio");
         }
 
+        // Limpia espacios del DNI antes de verificar duplicados.
         alumno.DNI = alumno.DNI.Trim();
 
+        // Si ya existe un alumno con ese DNI, no lo deja crear.
         if (await _context.Alumnos.AnyAsync(a => a.DNI == alumno.DNI))
         {
             return Conflict(new { mensaje = "El DNI ya existe" });
@@ -111,9 +133,12 @@ public class AlumnosController : ControllerBase
         _context.Alumnos.Add(alumno);
         await _context.SaveChangesAsync();
 
+        // Devuelve Creado con la ubicacion.
         return CreatedAtAction(nameof(GetAlumno), new { id = alumno.AlumnoID }, alumno);
     }
 
+    // DELETE /api/Alumnos/{id}
+    // Elimina un alumno por su ID. Si no existe devuelve not found.
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAlumno(int id)
     {
@@ -130,6 +155,7 @@ public class AlumnosController : ControllerBase
         return NoContent();
     }
 
+    // verifica si un alumno existe en la base.
     private bool AlumnoExists(int id)
     {
         return _context.Alumnos.Any(e => e.AlumnoID == id);
