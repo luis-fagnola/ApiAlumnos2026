@@ -1,4 +1,4 @@
-// Pide la lista de notas con datos de alumno 
+// Obtener desde la API la lista de notas con sus datos de alumno.
 function obtenerNotaAlumnos() {
     fetch("/api/NotaAlumnoes/vista")
     .then ((response) => response.json())
@@ -6,30 +6,7 @@ function obtenerNotaAlumnos() {
     .catch ((error) => console.log('Error al obtener los alumnos:', error));
 }
 
-// Carga la lista de alumnos
-// Cada opcion muestra apellido, nombre y DNI del alumno.
-async function cargarAlumnos() {
-    try {
-        const respuesta = await fetch("/api/Alumnos");
-        if (!respuesta.ok) throw new Error("Error al obtener alumnos");
-
-        const alumnos = await respuesta.json();
-
-        const selectAlumno = document.getElementById("selectAlumno");
-        selectAlumno.innerHTML = "<option value='' disabled selected>Seleccionar alumno</option>";
-
-        alumnos.forEach((alumno) => {
-            const opt = document.createElement("option");
-            opt.value = alumno.alumnoID ?? alumno.alumnoId;
-            opt.textContent = `${alumno.apellido}, ${alumno.nombre} - DNI: ${alumno.dNI ?? alumno.dni}`;
-            selectAlumno.appendChild(opt);
-        });
-    } catch (error) {
-        console.error("Error al cargar alumnos:", error);
-    }
-}
-
-// Carga la lista de asignaturas  en el select de alta y edicion.
+// Carga las asignaturas en el select del modal.
 async function cargarAsignaturas() {
     try {
         const respuesta = await fetch("/api/Asignaturas");
@@ -59,8 +36,34 @@ async function cargarAsignaturas() {
     }
 }
 
-// Arma la tabla de notas  Muestra nombre, apellido, DNI, nota y fecha.
-// Si el registro tiene ID valido, muestra los botones 
+// Carga los alumnos en el select del modal.
+async function cargarAlumnos() {
+    try {
+        const respuesta = await fetch("/api/Alumnos");
+        if (!respuesta.ok) throw new Error("Error al obtener alumnos");
+
+        const alumnos = await respuesta.json();
+        const selectAlumno = document.getElementById("selectAlumno");
+
+        if (!selectAlumno) return;
+
+        selectAlumno.innerHTML = "<option value='' disabled selected>Seleccionar alumno</option>";
+
+        alumnos.forEach((alumno) => {
+            const option = document.createElement("option");
+            const alumnoId = alumno.alumnoID ?? alumno.alumnoId;
+            const dni = alumno.dNI ?? alumno.dni ?? "-";
+
+            option.value = alumnoId;
+            option.textContent = `${alumno.apellido ?? ""}, ${alumno.nombre ?? ""} (${dni})`;
+            selectAlumno.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error al cargar alumnos:", error);
+    }
+}
+
+// Muestra la tabla principal de NotaAlumnos en pantalla.
    function MostrarNotaAlumnos(data) {
     $("#tablaAlumnos").empty();
 
@@ -71,49 +74,49 @@ async function cargarAsignaturas() {
             `<tr>
         <td>${registro.nombre ?? ""}</td>
         <td>${registro.apellido ?? ""}</td>
-        <td>${registro.dNI ?? registro.dni ?? ""}</td>
+        <td>${registro.dNI ?? registro.dni ?? "<span class='text-muted'>-</span>"}</td>
         <td>${registro.nota != null ? registro.nota : "<span class='text-muted'>Sin nota</span>"}</td>
         <td>${registro.fecha ? new Date(registro.fecha).toLocaleDateString('es-AR') : "<span class='text-muted'>-</span>"}</td>
                  <td class="text-center">
                     ${id > 0 ? `<button class="btn btn-sm btn-warning me-2" onclick="MostrarModalEditar(${id})">Editar</button>
                     <button class="btn btn-sm btn-danger" onclick="EliminarAlumno(${id})">Eliminar</button>` : ""}
+              
+                 <button class="btn btn-sm btn-info" onclick="verHistorialAlumno(${id})">Historial</button>
+
                 </td>
             </tr>`);
     });
 }
 
-// Valida el formulario de alta: alumno seleccionado, asignatura seleccionada
-
+// Valida el formulario 
 function ValidarFormulario() {
-    let esValido = true;
-
     const selectAlumno = document.getElementById("selectAlumno");
-    const errorAlumno = document.getElementById("errorSelectAlumno");
-    selectAlumno.classList.remove("is-invalid");
-    errorAlumno.textContent = "";
-    if (!selectAlumno.value) {
-        selectAlumno.classList.add("is-invalid");
-        errorAlumno.textContent = "Debe seleccionar un alumno";
+    const selectAsignaturas = document.getElementById("selectAsignaturas");
+
+  let inputNota = document.getElementById("Nota");
+  let errorNota = document.getElementById("errorNotaAlumno");
+  let nota = inputNota.value.trim();
+
+  errorNota.textContent = "";
+  inputNota.classList.remove("is-invalid", "is-valid");
+
+  let esValido = true;
+
+    // Valida que se seleccione alumno y asignatura.
+    if (!selectAlumno || !selectAlumno.value) {
+        alert("Debe seleccionar un alumno");
         esValido = false;
     }
 
-    const selectAsignatura = document.getElementById("selectAsignaturas");
-    const errorAsignatura = document.getElementById("errorSelectAsignatura");
-    selectAsignatura.classList.remove("is-invalid");
-    errorAsignatura.textContent = "";
-    if (!selectAsignatura.value) {
-        selectAsignatura.classList.add("is-invalid");
-        errorAsignatura.textContent = "Debe seleccionar una asignatura";
+    if (!selectAsignaturas || !selectAsignaturas.value) {
+        alert("Debe seleccionar una asignatura");
         esValido = false;
     }
 
-    const inputNota = document.getElementById("Nota");
-    const errorNota = document.getElementById("errorNotaAlumno");
-    const nota = inputNota.value.trim();
-    inputNota.classList.remove("is-invalid");
-    errorNota.textContent = "";
+    // Valida que la nota exista y este entre 1 y 10.
     const notaNumero = Number(nota);
-    if (!nota) {
+
+    if(!nota) {
         inputNota.classList.add("is-invalid");
         errorNota.textContent = "Campo obligatorio";
         esValido = false;
@@ -121,13 +124,15 @@ function ValidarFormulario() {
         inputNota.classList.add("is-invalid");
         errorNota.textContent = "La nota debe estar entre 1 y 10";
         esValido = false;
+    } else {
+        inputNota.classList.remove("is-invalid");
+        errorNota.textContent = "";
     }
 
-    return esValido;
+  return esValido;
 }
 
-// Valida el formulario de edicion todos los campos obligatorios,
-// nota entre 1 y 10 y DNI con formato correcto.
+// Valida el formulario de edicion antes de enviar cambios.
 function ValidarFormularioEditar() {
     let nombre = document.getElementById("editarNombre").value.trim();
     let apellido = document.getElementById("editarApellido").value.trim();
@@ -155,7 +160,7 @@ function ValidarFormularioEditar() {
 }
 
 
-// Decide si crear o editar si hay un ID cargado
+// se crea o edita un alumno segun exista o no un ID cargado.
 function BuscarAlumnoId () {
     if (!ValidarFormulario()) {
         return;
@@ -168,61 +173,79 @@ function BuscarAlumnoId () {
     }
 }
 
-// Envia la nueva nota del alumno y asignatura seleccionado.
-// Limpia el formulario cierra el modal y recarga la tabla 
-async function CrearAlumno() {
-    const alumnoId = parseInt(document.getElementById("selectAlumno").value);
-    const asignaturaId = parseInt(document.getElementById("selectAsignaturas").value);
-    const notaValor = Number(document.getElementById("Nota").value);
-    const fechaValor = document.getElementById("Fecha").value;
+// Crea primero el alumno y luego su nota en la asignatura.
+    async function CrearAlumno() {
+        const notaValor = Number(document.getElementById("Nota").value);
+        const alumnoId = parseInt(document.getElementById("selectAlumno").value);
+        const fecha = document.getElementById("Fecha")?.value;
 
-    try {
-        // Alta de nota  alumno y asignatura seleccionada.
-        const notaResponse = await fetch("/api/NotaAlumnoes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                alumnoID: alumnoId,
-                asignaturaID: asignaturaId,
-                nota: notaValor,
-                fecha: fechaValor ? new Date(fechaValor).toISOString() : new Date().toISOString()
-            })
-        });
-
-        if (!notaResponse.ok) {
-            const msg = await notaResponse.text();
-            throw new Error(msg || "No se pudo crear la nota");
+        if (!Number.isFinite(notaValor) || notaValor < 1 || notaValor > 10) {
+            document.getElementById("Nota").classList.add("is-invalid");
+            document.getElementById("errorNotaAlumno").textContent = "La nota debe estar entre 1 y 10";
+            return;
         }
 
-        // Limpia formulario, cierra modal y refresca tabla.
-        document.getElementById("selectAlumno").value = "";
-        document.getElementById("selectAsignaturas").value = "";
-        document.getElementById("Nota").value = "";
-        document.getElementById("Fecha").value = "";
+        if (!alumnoId) {
+            alert("Debe seleccionar un alumno");
+            return;
+        }
 
-        let modal = bootstrap.Modal.getInstance(document.getElementById("modalAlumnos"));
-        modal.hide();
-        obtenerNotaAlumnos();
-    } catch (error) {
-        console.log("Error al crear la nota:", error);
-        alert("No se pudo guardar: " + error.message);
+        const asignaturaId = parseInt(document.getElementById("selectAsignaturas").value);
+        if (!asignaturaId) {
+            alert("Debe seleccionar una asignatura");
+            return;
+        }
+
+        try {
+            // Alta de nota vinculada al alumno y asignatura seleccionada.
+            const notaResponse = await fetch("/api/NotaAlumnoes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    alumnoID: alumnoId,
+                    asignaturaID: asignaturaId,
+                    nota: notaValor,
+                    fecha: fecha ? new Date(fecha).toISOString() : undefined
+                })
+            });
+
+            if (!notaResponse.ok) {
+                const msg = await notaResponse.text();
+                throw new Error(msg || "No se pudo crear la nota");
+            }
+
+            // Limpia formulario, cierra modal y refresca tabla.
+            document.getElementById("selectAlumno").value = "";
+            document.getElementById("Nota").value = "";
+            if (document.getElementById("Fecha")) {
+                document.getElementById("Fecha").value = "";
+            }
+
+            let modal= bootstrap.Modal.getInstance(document.getElementById("modalAlumnos"));
+            modal.hide();
+            obtenerNotaAlumnos();
+        } catch (error) {
+            console.log("Error al crear la nota:", error);
+            alert("No se pudo guardar: " + error.message);
+        }
     }
-}
 
 
-// Pide el registro por ID y carga los datos en el modal de edicion.
-// Tambien espera que se carguen las asignaturas.
-async function MostrarModalEditar(id, alumnoId, asignaturaId){
-    try {
-        const response = await fetch(`/api/NotaAlumnoes/${id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
-        const data = await response.json();
-
+// Carga datos del registro y abre el modal de edicion.
+function MostrarModalEditar(id, alumnoId, asignaturaId){
+    fetch(`/api/NotaAlumnoes/${id}`, {
+    method: "GET",
+    headers: {
+        "Content-Type": "application/json",
+    }
+    })
+    .then((response) => response.json())
+    .then((data) => {
         const alumno = data.alumno || {};
         const hiddenId = document.getElementById("editarId");
-
+        
         hiddenId.value = data.notaAlumnoID ?? data.notaAlumnoId ?? id;
         hiddenId.dataset.alumnoId = alumnoId ?? data.alumnoID ?? data.alumnoId ?? alumno.alumnoID ?? alumno.alumnoId;
         hiddenId.dataset.asignaturaId = asignaturaId ?? data.asignaturaID ?? data.asignaturaId;
@@ -233,21 +256,71 @@ async function MostrarModalEditar(id, alumnoId, asignaturaId){
         document.getElementById("editarNota").value = data.nota;
         document.getElementById("editarFecha").value = data.fecha ? new Date(data.fecha).toISOString().split('T')[0] : "";
 
-        // Espera que se carguen las asignaturas antes de seleccionar la actual.
-        await cargarAsignaturas();
-
         const asignaturaActual = asignaturaId ?? data.asignaturaID ?? data.asignaturaId;
         document.getElementById("editarAsignatura").value = asignaturaActual;
 
         let modal = new bootstrap.Modal(document.getElementById("editarAlumnoModal"));
         modal.show();
-    } catch (error) {
-        console.log("Error al obtener el alumno:", error);
-    }
+    })
+    .catch((error) => console.log("Error al obtener el alumno:", error));
 }
 
-// Actualiza los datos del alumno y la nota 
-// Usa los IDs guardados 
+
+//funcion para mostrar el historial de cambios de una nota de alumno
+function verHistorialAlumno(id) {
+    if (!id || id === 0) {
+        alert("Este alumno no tiene una nota registrada, por lo que no hay historial disponible.");
+        return;
+    }
+    fetch(`/api/NotaAlumnoes/${id}/historial`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    .then((response) => {
+        if (response.status === 404) {
+            return [];
+        }
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then((data) => {
+
+        const historialList = document.getElementById("tablaHistorial");
+        historialList.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            historialList.innerHTML =
+                "<tr><td colspan='4' class='text-center text-muted'>No hay cambios registrados para esta nota.</td></tr>";
+        } else {
+            data.forEach((cambio) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${cambio.campoModificado ?? "-"}</td>
+                    <td>${cambio.valorAnterior ?? "-"}</td>
+                    <td>${cambio.valorNuevo ?? "-"}</td>
+                    <td>${cambio.fechaCambio ? new Date(cambio.fechaCambio).toLocaleString('es-AR') : "-"}</td>`;
+                historialList.appendChild(row);
+            });
+        }
+
+        let modal = new bootstrap.Modal(
+            document.getElementById("historialAlumnoModal")
+        );
+        modal.show();
+    })
+    .catch((error) => {
+        console.error("Error al obtener el historial:", error);
+        alert("No se pudo cargar el historial. Intente nuevamente.");
+    });
+}
+
+
+
+// Actualiza alumno y nota en la API usando los IDs guardados en el modal.
 async function EditarAlumno() {
     if (!ValidarFormularioEditar()) {
         return;
@@ -258,6 +331,7 @@ async function EditarAlumno() {
     const alumnoId = Number(hiddenId.dataset.alumnoId);
     const asignaturaId = parseInt(document.getElementById("editarAsignatura").value);
     const notaValor = Number(document.getElementById("editarNota").value);
+    
 
     let alumno = {
         alumnoID: alumnoId,
@@ -266,6 +340,7 @@ async function EditarAlumno() {
         dni: document.getElementById("editarDni").value,
         sexo: 3,
         domicilio: "Sin domicilio"
+        
     };
 
     const fechaEditar = document.getElementById("editarFecha").value;
@@ -277,6 +352,8 @@ async function EditarAlumno() {
         nota: notaValor,
         fecha: fechaEditar ? new Date(fechaEditar).toISOString() : new Date().toISOString()
     };
+
+
 
     try {
         // Actualiza datos del alumno.
@@ -293,7 +370,6 @@ async function EditarAlumno() {
             throw new Error(msg || "No se pudo editar el alumno");
         }
 console.log(notaAlumno);
-
         // Actualiza la nota.
         const notaResponse = await fetch(`/api/NotaAlumnoes/${id}`, {
             method: "PUT",
@@ -308,7 +384,7 @@ console.log(notaAlumno);
             throw new Error(msg || "No se pudo editar la nota");
         }
 
-        //Limpia campos, cierra modal y refresca
+        //Limpia campos, cierra modal y refresca la grilla.
         document.getElementById("editarId").value = "";
         document.getElementById("editarNombre").value = "";
         document.getElementById("editarApellido").value = "";
@@ -325,7 +401,7 @@ console.log(notaAlumno);
 }
 
 
-//confirma antes de eliminar.
+//confirmacion antes de eliminar.
 function EliminarAlumno (id) {
     var Eliminar = confirm("¿Está seguro de eliminar el alumno?");
     if (Eliminar==true) {
@@ -334,7 +410,7 @@ function EliminarAlumno (id) {
 }
 
 
-// Elimina la nota del alumno y carga la tabla.
+// Elimina la nota del alumno y vuelve a cargar la tabla.
 function EliminarSi(id) {
     fetch(`/api/NotaAlumnoes/${id}`, {
         method: "DELETE",

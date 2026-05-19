@@ -54,7 +54,7 @@ public class AsignaturasController : ControllerBase
         }
 
         _context.Entry(asignatura).State = EntityState.Modified;
-
+        
         try
         {
             await _context.SaveChangesAsync();
@@ -108,4 +108,8 @@ public class AsignaturasController : ControllerBase
     {
         return _context.Asignaturas.Any(e => e.AsignaturaID == id);
     }
+
+
+  
+    
 }

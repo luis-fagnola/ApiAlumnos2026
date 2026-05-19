@@ -32,6 +32,8 @@ function MostrarAlumnos(data) {
                     <button class="btn btn-sm btn-danger" onclick="EliminarAlumno(${id})">
                         Eliminar
                     </button>
+
+                    <button class="btn btn-sm btn-info" onclick="HistorialAlumno(${id})">Historial</button>
                 </td>
             </tr>`
         );
@@ -243,4 +245,56 @@ function EliminarAlumno(id) {
             console.log("Error al eliminar el alumno:", error);
             alert("No se pudo eliminar: " + error.message);
         });
+}
+
+//funcion para mostrar el historial de cambios de un alumno
+function HistorialAlumno(id) {
+    if (!id || id === 0) {
+        alert("Este alumno no tiene una nota registrada, por lo que no hay historial disponible.");
+        return;
+    }
+    fetch(`/api/Alumnos/${id}/historial`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    .then((response) => {
+        if (response.status === 404) {
+            return [];
+        }
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then((data) => {
+
+        const historialList = document.getElementById("tablaHistorial");
+        historialList.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            historialList.innerHTML =
+                "<tr><td colspan='4' class='text-center text-muted'>No hay cambios registrados para este alumno.</td></tr>";
+        } else {
+            data.forEach((cambio) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${cambio.campoModificado ?? "-"}</td>
+                    <td>${cambio.valorAnterior ?? "-"}</td>
+                    <td>${cambio.valorNuevo ?? "-"}</td>
+                    <td>${cambio.fechaCambio ? new Date(cambio.fechaCambio).toLocaleString('es-AR') : "-"}</td>`;
+                historialList.appendChild(row);
+            });
+        }
+
+        let modal = new bootstrap.Modal(
+            document.getElementById("historialAlumno")
+        );
+        modal.show();
+    })
+    .catch((error) => {
+        console.error("Error al obtener el historial:", error);
+        alert("No se pudo cargar el historial. Intente nuevamente.");
+    });
 }

@@ -39,6 +39,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="PromedioAlumnos.html">Promedio Alumnos</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="PromedioAsignaturas.html">Promedio Asignaturas</a>
+                    </li>
                 </ul>
             </div>
 
@@ -157,6 +160,7 @@
                         <input type="date" id="editarFecha" class="form-control">
                         <label class="form-label mt-2">Asignatura</label>
                         <select id="editarAsignatura" class="form-control"></select>
+                       
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -166,6 +170,40 @@
             </div>
         </div>
     </div>
+
+
+<!-- Modal Historial Alumno -->
+<div id="historialAlumnoModal" class="modal fade" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content shadow border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">Historial de Cambios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped table-hover table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Campo Modificado</th>
+                            <th>Valor Anterior</th>
+                            <th>Valor Nuevo</th>
+                            <th>Fecha Cambio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHistorial">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

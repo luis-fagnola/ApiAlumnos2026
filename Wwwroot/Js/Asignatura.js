@@ -83,4 +83,6 @@ function eliminarAsignatura(id) {
 		.catch(() => alert("Error al eliminar asignatura"));
 }
 
+cargarAsignaturas();
+
 

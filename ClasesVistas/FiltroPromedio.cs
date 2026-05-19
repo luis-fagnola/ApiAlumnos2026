@@ -8,3 +8,4 @@ public class FiltroPromedio
 
     public int? AlumnoID { get; set; }
 }
+

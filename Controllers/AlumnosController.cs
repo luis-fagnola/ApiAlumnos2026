@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ApiAlumnos2026.ClasesVistas;
 using ApiAlumnos2026.Data;
 using ApiAlumnos2026.Models;
+using NotasAlumnos2026.ClasesVistas;
 
 namespace ApiAlumnos2026.Controllers;
 
@@ -64,10 +65,28 @@ public class AlumnosController : ControllerBase
         return alumno;
     }
 
+    // GET /api/Alumnos/{id}/historial
+    // Trae el historial de cambios de un alumno por su ID.
+    [HttpGet("{id}/historial")]
+    public async Task<ActionResult<IEnumerable<HistorialAlumnos>>> GetHistorialAlumno(int id)
+    {
+        // Busca el historial de cambios para un alumno por ID.
+                var historial = await _context.HistorialAlumnos
+                    .Where(h => h.AlumnoID == id)
+                    .OrderByDescending(h => h.FechaCambio)
+                    .ToListAsync();
+    
+                // Si no hay historial, responde not found.
+                if (historial == null || !historial.Any())
+                {
+                    return NotFound();
+                }
+    
+                return Ok(historial);
+            }   
+
     // PUT /api/Alumnos/{id}
-    // Edita los datos de un alumno existente.
-    // Verifica que el ID coincida, limpia espacios del DNI
-    // y controla que no haya otro alumno con el mismo DNI.
+    
     [HttpPut("{id}")]
     public async Task<IActionResult> PutAlumno(int id, Alumno alumno)
     {
@@ -75,10 +94,63 @@ public class AlumnosController : ControllerBase
         {
             return BadRequest();
         }
+        
+        var alumnoExistente = await _context.Alumnos.AsNoTracking().FirstOrDefaultAsync(a => a.AlumnoID == id);
+        if (alumnoExistente == null)
+        {
+            return NotFound();
+        }
+        
+        if (alumnoExistente.Nombre != alumno.Nombre)
+        {
+            _context.HistorialAlumnos.Add(new HistorialAlumnos
+            {
+                AlumnoID = id,
+                CampoModificado = "Nombre",
+                ValorAnterior = alumnoExistente.Nombre,
+                ValorNuevo = alumno.Nombre,
+                FechaCambio = DateTime.Now
+            });
+        }
+        if (alumnoExistente.DNI != alumno.DNI)
+        {
+            _context.HistorialAlumnos.Add(new HistorialAlumnos
+            {
+                AlumnoID = id,
+                CampoModificado = "DNI",
+                ValorAnterior = alumnoExistente.DNI,
+                ValorNuevo = alumno.DNI,
+                FechaCambio = DateTime.Now
+            });
+        }
+        if (alumnoExistente.Sexo != alumno.Sexo)
+        {
+            _context.HistorialAlumnos.Add(new HistorialAlumnos
+            {
+                AlumnoID = id,
+                CampoModificado = "Sexo",
+                ValorAnterior = alumnoExistente.Sexo.ToString(),
+                ValorNuevo = alumno.Sexo.ToString(),
+                FechaCambio = DateTime.Now
+            });
+        }
+        if (alumnoExistente.Domicilio != alumno.Domicilio)
+        {
+            _context.HistorialAlumnos.Add(new HistorialAlumnos
+            {
+                AlumnoID = id,
+                CampoModificado = "Domicilio",
+                ValorAnterior = alumnoExistente.Domicilio,
+                ValorNuevo = alumno.Domicilio,
+                FechaCambio = DateTime.Now
+            });
+        }
+
+       
 
         // Saca los espacios en blanco del DNI antes de guardar.
         alumno.DNI = alumno.DNI.Trim();
-
+        
         // Si ya hay otro alumno con ese DNI (que no sea el mismo), rechaza con conflicto.
         if (await _context.Alumnos.AnyAsync(a => a.DNI.Trim() == alumno.DNI && a.AlumnoID != id))
         {

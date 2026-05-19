@@ -2,7 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using ApiAlumnos2026.Models;
-
+using ApiAlumnos2026.ClasesVistas;
+using NotasAlumnos2026.ClasesVistas;
 namespace ApiAlumnos2026.Data;
 
 public class AppDbContext: DbContext
@@ -15,6 +16,9 @@ public class AppDbContext: DbContext
     public DbSet<Docente> Docentes { get; set; }
     public DbSet<Asignatura> Asignaturas { get; set; }
     public DbSet<NotaAlumno> NotasAlumnos { get; set; }
+    public DbSet<HistorialNotaAlumno> HistorialNotaAlumnos { get; set; }
+
+    public DbSet<HistorialAlumnos> HistorialAlumnos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

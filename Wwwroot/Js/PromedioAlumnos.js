@@ -33,6 +33,46 @@ function IniciarFechas() {
     document.getElementById("FechaDesdeBuscar").value = fechaDesde;
     document.getElementById("FechaHastaBuscar").value = fechaHasta;
 }
+    // Ordena los alumnos  por nombre o por promedio.
+    let alumnosActuales = [];
+    function ordenarAlumnos(alumnos) {  
+        const criterio = document.getElementById("ordenPromedioAlumnos").value;
+        const alumnosOrdenados = [...alumnos]
+            
+
+        // Si el criterio es promedio, ordena por promedio de mayor a menor.
+        if (criterio === "promedio") {
+            return alumnosOrdenados.sort((a, b) => b.promedio - a.promedio);
+        }
+        return alumnosOrdenados.sort((a, b) => {
+            const nombreA = (a.nombre || "").toString();
+            const nombreB = (b.nombre || "").toString();
+            return nombreA.localeCompare(nombreB, "es" ,{ sensitivity: "base" });
+        }); 
+}
+
+// Muestra la tabla con los promedios de cada alumno.
+function MuestraTablaPromedios(alumnos) {
+    const tbody = document.querySelector("#tablaPromedio");
+    tbody.innerHTML = "";
+
+    if (alumnos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center">No hay datos disponibles</td></tr>`;
+        return;
+    }
+
+    alumnos.forEach(alumno => {
+        const rowInsertar = document.createElement("tr");
+        rowInsertar.innerHTML = `          
+            <td>${alumno.nombre}</td>   
+            <td>${alumno.apellido}</td>
+            <td class="text-center">${alumno.dNI || alumno.dni}</td>
+            <td class="text-center text-bold">${alumno.promedio.toFixed(2)}</td>
+        `;
+        tbody.appendChild(rowInsertar);
+    });
+}
+
 // el usuario cambia la asignatura, vuelve a buscar los promedios.
 const inputCategoria = document.getElementById("selecionarAsignatura");
 inputCategoria.onchange = function () {
@@ -49,6 +89,14 @@ inputFechaDesde.onchange = function () {
 const inputFechaHasta = document.getElementById("FechaHastaBuscar");
 inputFechaHasta.onchange = function () {
     getPromedioAlumnos();
+};
+
+
+//cambia el orden, reordena .
+const inputOrden = document.getElementById("ordenPromedioAlumnos");
+inputOrden.onchange = function () {
+    const alumnosOrdenados = ordenarAlumnos(alumnosActuales);
+    MuestraTablaPromedios(alumnosOrdenados);
 };
 
 //  filtros de fecha y asignatura seleccionados.
@@ -91,27 +139,16 @@ async function getPromedioAlumnos() {
         if (!res.ok) {
             throw new Error("Error en la solicitud");
         }
+       // Guarda los alumnos actuales para poder reordenarlos 
+       const alumnos = await res.json();
+        alumnosActuales = alumnos;
 
-        const alumnos = await res.json();
-        const tbody = document.querySelector("#tablaPromedio");
-        tbody.innerHTML = "";
 
-        if (alumnos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center">No hay datos disponibles</td></tr>`;
-            return;
-        }
+            // Ordena los alumnos por el criterio seleccionado y muestra la tabla.
+        const alumnosOrdenados = ordenarAlumnos(alumnosActuales);
+        MuestraTablaPromedios(alumnosOrdenados);
 
-        alumnos.forEach(alumno => {
-            const rowInsertar = document.createElement("tr");
-            rowInsertar.innerHTML = `          
-                <td>${alumno.nombre}</td>   
-                <td>${alumno.apellido}</td>
-                <td class="text-center">${alumno.dNI || alumno.dni}</td>
-                <td class="text-center text-bold">${alumno.promedio.toFixed(2)}</td>
-              
-            `;
-            tbody.appendChild(rowInsertar);
-        });
+
     } catch (error) {
         console.error("Error:", error);
         alert("Error al obtener los promedios");
@@ -120,3 +157,4 @@ async function getPromedioAlumnos() {
 
 //carga las asignaturas
 ObtenerAsignaturas();
+
